@@ -7,7 +7,7 @@ try:
     import numpy as np
     import warnings
     warnings.filterwarnings('ignore')
-    print("Library Loaded Successfully ..........")
+    print("Libraries Loaded Successfully")
 except:
     print("Library not Found ! ")
 
@@ -37,15 +37,18 @@ class DataLoader:
         try :
             self.list_categories = sorted(self.list_categories, key=lambda x : int(x.split("-")[0]))
         except: 
-            pass
+            try :
+                self.list_categories = sorted(self.list_categories, key=lambda x : int(x))
+            except:
+                pass
 
-        print("Found Categories ",self.list_categories,'\n')
+        print("Found Categories :",self.list_categories,'\n')
         return self.list_categories
     
 
     def preprocess_image(self, image):
 
-        image_data_temp = cv2.imread(image,cv2.IMREAD_GRAYSCALE)                 # Read Image as numbers
+        image_data_temp = cv2.imread(image,cv2.IMREAD_GRAYSCALE)                 
         image_padded = cv2.copyMakeBorder(image_data_temp, self.PADDING, self.PADDING, self.PADDING, self.PADDING, cv2.BORDER_CONSTANT, value=0)
         if self.INVERT : image_padded = 255 - image_padded
         image_temp_resize = cv2.resize(image_padded,(self.IMAGE_SIZE,self.IMAGE_SIZE))
@@ -64,13 +67,13 @@ class DataLoader:
             :return: X_Data, Y_Data
             """
             self.CATEGORIES = self.get_categories()
-            for categories in self.CATEGORIES:                                                  # Iterate over categories
+            for categories in self.CATEGORIES:                                                  
 
-                train_folder_path = os.path.join(self.PATH, categories)                         # Folder Path
-                class_index = self.CATEGORIES.index(categories)                                 # this will get index for classification
+                train_folder_path = os.path.join(self.PATH, categories)                         
+                class_index = self.CATEGORIES.index(categories)                                 
 
-                for img in os.listdir(train_folder_path):                                       # This will iterate in the Folder
-                    new_path = os.path.join(train_folder_path, img)                             # image Path
+                for img in os.listdir(train_folder_path):                                       
+                    new_path = os.path.join(train_folder_path, img)                             
 
                     try:
                         image_temp_resize = self.preprocess_image(new_path)
@@ -86,19 +89,19 @@ class DataLoader:
 
             X_Data = np.asarray(self.x_data) / (255.0)
             Y_Data = np.asarray(self.y_data)
-
-            # reshape x_Data
+            
 
             X_Data = X_Data.reshape(-1, self.IMAGE_SIZE, self.IMAGE_SIZE)
 
             return X_Data, Y_Data
+        
         except:
             print("Failed to run Function Process Image ")
 
 
     def load_data(self):
 
-        print('Loading File and Dataset  ..........')
+        print('Loading Files and Dataset ...')
 
         X_Data,Y_Data = self.Process_Images()
         return X_Data,Y_Data
@@ -108,6 +111,50 @@ class DataLoader:
 
 DATASET1 = "Datasets\DS-1"
 DATASET2 = "Datasets\DS-2"
+
+LABELS = {0 : 'Alef',
+          1 : 'Be',
+          2 : 'Pe',
+          3 : 'Te',
+          4 : 'Se',
+          5 : 'Jim',
+          6 : 'Che',
+          7 : 'H',
+          8 : 'Khe',
+          9 : 'Dal',
+          10 : 'Zal',
+          11 : 'Re',
+          12 : 'Ze',
+          13 : 'Zhe',
+          14 : 'Sin',
+          15 : 'Shin',
+          16 : 'Sad', 
+          17 : 'Zad',
+          18 : 'Ta',
+          19 : 'Za',
+          20 : 'Ayin',
+          21 : 'Ghayin',
+          22 : 'Fe',
+          23 : 'Ghaf', 
+          24 : 'Kaf',
+          25 : 'Gaf', 
+          26 : 'Lam',
+          27 : 'Mim',
+          28 : 'Noon',
+          29 : 'Vav', 
+          30 : 'He',
+          31 : 'Ye',
+          32 : 'Zero',
+          33 : 'One',
+          34 : 'Two',
+          35 : 'Three',
+          36 : 'Four',
+          37 : 'Five',
+          38 : 'Six',
+          39 : 'Seven',
+          40 : 'Eight',
+          41 : 'Nine',
+          42 : 'Five'}
 
 
 if __name__ == "__main__":
@@ -122,6 +169,6 @@ if __name__ == "__main__":
     print(X_Data.shape)
     print(Y_Data.shape)
 
-    cv2.imshow('test', X_Data[400])
+    cv2.imshow(f"test no. {Y_Data[400]}", X_Data[400])
 
     cv2.waitKey(0)
