@@ -159,10 +159,10 @@ LABELS = {0 : 'Alef',
 
 if __name__ == "__main__":
 
-    dataset = DataLoader(path=DATASET2,
-                    image_size=50,
-                    padding=20,
-                    invert=False)
+    dataset = DataLoader(path=DATASET1,
+                    image_size=100,
+                    padding=0,
+                    invert=True)
 
     X_Data,Y_Data = dataset.load_data()
 
