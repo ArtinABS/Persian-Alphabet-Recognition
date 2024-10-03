@@ -61,11 +61,11 @@ class DataLoader:
     
     
     def Process_Images(self):
+        """
+        Return Numpy array of image\n
+        :return: X_Data, Y_Data
+        """
         try:
-            """
-            Return Numpy array of image
-            :return: X_Data, Y_Data
-            """
             self.CATEGORIES = self.get_categories()
             for categories in self.CATEGORIES:                                                  
 
