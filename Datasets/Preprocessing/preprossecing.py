@@ -50,7 +50,7 @@ output_dataset = r'C:\Users\NoteBook\Desktop\alphabet\Datasets\preprosseced all 
 # Merge and shuffle datasets
 def merge_shuffle_folders(dataset1, dataset2, output_dataset):
     if not os.path.exists(output_dataset):
-        os.makedirs(output_dataset)
+        os,makedirs(output_dataset)
     image_paths = []
 
     for root, dirs, files in os.walk(dataset1):
