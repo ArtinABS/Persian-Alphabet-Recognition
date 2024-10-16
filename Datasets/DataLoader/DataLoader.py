@@ -14,11 +14,12 @@ except:
 
 
 class DataLoader:
-    def __init__(self, path = '', image_size = 50, padding = 10, invert = False) -> None:
+    def __init__(self, path = '', image_size = 50, slice = 0, padding = 10, invert = False) -> None:
         self.PATH = path
         self.IMAGE_SIZE = image_size
         self.PADDING = padding
         self.INVERT = invert
+        self.SLICE = slice
 
         self.image_data = []
         self.x_data = []
@@ -61,11 +62,11 @@ class DataLoader:
     
     
     def Process_Images(self):
-        """
-        Return Numpy array of image\n
-        :return: X_Data, Y_Data
-        """
-        try:
+        # """
+        # Return Numpy array of image\n
+        # :return: X_Data, Y_Data
+        # """
+        # try:
             self.CATEGORIES = self.get_categories()
             for categories in self.CATEGORIES:                                                  
 
@@ -79,7 +80,7 @@ class DataLoader:
                         image_temp_resize = self.preprocess_image(new_path)
 
                         if image_temp_resize is not None:  
-                            self.x_data.append(image_temp_resize)
+                            self.x_data.append(image_temp_resize[self.SLICE:self.IMAGE_SIZE-self.SLICE, self.SLICE:self.IMAGE_SIZE-self.SLICE])
                             self.y_data.append(class_index)
 
                     except Exception as e:
@@ -89,14 +90,15 @@ class DataLoader:
 
             X_Data = np.asarray(self.x_data) / (255.0)
             Y_Data = np.asarray(self.y_data)
+
             
 
-            X_Data = X_Data.reshape(-1, self.IMAGE_SIZE, self.IMAGE_SIZE)
+            X_Data = X_Data.reshape(-1, self.IMAGE_SIZE-2*self.SLICE, self.IMAGE_SIZE-2*self.SLICE)
 
             return X_Data, Y_Data
         
-        except:
-            print("Failed to run Function Process Image ")
+        # except:
+        #     print("Failed to run Function Process Image ")
 
 
     def load_data(self):
@@ -104,6 +106,11 @@ class DataLoader:
         print('Loading Files and Dataset ...')
 
         X_Data,Y_Data = self.Process_Images()
+        # np.savez_compressed("dataset", X_train=X_Data, y_train=Y_Data)
+
+
+        # data = np.load("dataset.npz")
+        # x_train = data["X_train"]
         return X_Data,Y_Data
         
 
@@ -160,7 +167,8 @@ LABELS = {0 : 'Alef',
 if __name__ == "__main__":
 
     dataset = DataLoader(path=DATASET1,
-                    image_size=100,
+                    image_size=64,
+                    slice=20,
                     padding=0,
                     invert=True)
 

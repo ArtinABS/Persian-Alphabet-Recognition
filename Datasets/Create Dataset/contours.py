@@ -1,6 +1,11 @@
 import cv2 as cv
 import numpy as np
+import os
 from matplotlib import pyplot as plt
+
+
+REAL_DATA = "F:\Programming\Python\Machine Learning\Persian-Alphabet-Recognition\Datasets\Real Data"
+
 
 def bounding_rect(contours):
     x, y, w, h = cv.boundingRect(contours)
@@ -18,7 +23,7 @@ def area(contours):
 def perimeter(contours):
     return cv.arcLength(contours, True)
 
-img = cv.imread("ALPHA.jpg")
+img = cv.imread(os.path.join(REAL_DATA, 'sin.png'))
 result = img.copy()
 
 img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
@@ -30,7 +35,7 @@ contours, hierarchy = cv.findContours(thresh, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_
 alph_list = []
 
 for cnt in contours:
-    if area(cnt) > 200:
+    if area(cnt) > 20:
         # cv.drawContours(result, cnt, -1, (0, 255, 0), 1)
         x, y, w, h = cv.boundingRect(cnt)
         cv.rectangle(result, (x, y), (x + w, y + h), (0, 0, 255), 2)
