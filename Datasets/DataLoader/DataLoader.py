@@ -14,12 +14,12 @@ except:
 
 
 class DataLoader:
-    def __init__(self, path = '', image_size = 50, slice = 0, padding = 10, invert = False) -> None:
+    def __init__(self, path = '', image_size = 50, shrink = 0, padding = 10, invert = False) -> None:
         self.PATH = path
         self.IMAGE_SIZE = image_size
         self.PADDING = padding
         self.INVERT = invert
-        self.SLICE = slice
+        self.SLICE = shrink
 
         self.image_data = []
         self.x_data = []
@@ -168,7 +168,7 @@ if __name__ == "__main__":
 
     dataset = DataLoader(path=DATASET1,
                     image_size=64,
-                    slice=20,
+                    shrink=22,
                     padding=0,
                     invert=True)
 
