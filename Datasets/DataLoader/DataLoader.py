@@ -1,182 +1,162 @@
-try:
+import os
+import cv2
+import numpy as np
+import warnings
 
+
+warnings.filterwarnings('ignore')
+
+
+try:
     import tensorflow as tf
-    import cv2
-    import os
-    import pickle
-    import numpy as np
-    import warnings
-    warnings.filterwarnings('ignore')
+    from sklearn.model_selection import train_test_split
     print("Libraries Loaded Successfully")
-except:
-    print("Library not Found ! ")
+except ImportError:
+    print("Failed to Load Libraries!")
 
 
 
 class DataLoader:
-    def __init__(self, path = '', image_size = 50, shrink = 0, padding = 10, invert = False) -> None:
+    def __init__(self, path='', image_size=50, shrink=0, padding=10, threshold=100, invert=False):
         self.PATH = path
         self.IMAGE_SIZE = image_size
         self.PADDING = padding
         self.INVERT = invert
+        self.THRESHOLD = threshold
         self.SLICE = shrink
 
-        self.image_data = []
         self.x_data = []
-        self.y_data = [] 
+        self.y_data = []
         self.labels = []
         self.CATEGORIES = []
-
         self.list_categories = []
 
 
     def get_categories(self):
-        for path in (os.listdir(self.PATH)):
-            label = path.split("-")[0]
+        """Get and sort categories based on folder names."""
+        for folder in os.listdir(self.PATH):
+            label = folder.split("-")[0]
             self.labels.append(label)
-            self.list_categories.append(path)
-        try :
-            self.list_categories = sorted(self.list_categories, key=lambda x : int(x.split("-")[0]))
-        except: 
-            try :
-                self.list_categories = sorted(self.list_categories, key=lambda x : int(x))
-            except:
-                pass
+            self.list_categories.append(folder)
+        
+        try:
+            self.list_categories = sorted(self.list_categories, key=lambda x: int(x.split("-")[0]))
+        except ValueError:
+            self.list_categories = sorted(self.list_categories)
 
-        print("Found Categories :",self.list_categories,'\n')
+        print("Found Categories:", self.list_categories, '\n')
         return self.list_categories
     
-
-    def preprocess_image(self, image):
-
-        image_data_temp = cv2.imread(image,cv2.IMREAD_GRAYSCALE)                 
-        image_padded = cv2.copyMakeBorder(image_data_temp, self.PADDING, self.PADDING, self.PADDING, self.PADDING, cv2.BORDER_CONSTANT, value=0)
-        if self.INVERT : image_padded = 255 - image_padded
-        image_temp_resize = cv2.resize(image_padded,(self.IMAGE_SIZE,self.IMAGE_SIZE))
-
-        # cv2.imshow('Padded Image', image_temp_resize)
-        # cv2.waitKey(0)
-
-        return image_temp_resize
-        
     
-    
-    def Process_Images(self):
-        # """
-        # Return Numpy array of image\n
-        # :return: X_Data, Y_Data
-        # """
-        # try:
-            self.CATEGORIES = self.get_categories()
-            for categories in self.CATEGORIES:                                                  
+    def centerize(self, image):
+        """Center the letter in the image using contours to find the bounding box."""
 
-                train_folder_path = os.path.join(self.PATH, categories)                         
-                class_index = self.CATEGORIES.index(categories)                                 
+        contours, _ = cv2.findContours(image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-                for img in os.listdir(train_folder_path):                                       
-                    new_path = os.path.join(train_folder_path, img)                             
-
-                    try:
-                        image_temp_resize = self.preprocess_image(new_path)
-
-                        if image_temp_resize is not None:  
-                            self.x_data.append(image_temp_resize[self.SLICE:self.IMAGE_SIZE-self.SLICE, self.SLICE:self.IMAGE_SIZE-self.SLICE])
-                            self.y_data.append(class_index)
-
-                    except Exception as e:
-                        print(f"Error processing {new_path}: {e}")
+        if len(contours) == 0:
+            return image
 
 
+        x, y, w, h = cv2.boundingRect(max(contours, key=cv2.contourArea))
 
-            X_Data = np.asarray(self.x_data) / (255.0)
-            Y_Data = np.asarray(self.y_data)
+        cropped_image = image[y:y+h, x:x+w]
 
-            
+        centered_image = np.zeros((self.IMAGE_SIZE, self.IMAGE_SIZE), dtype=np.uint8)
 
-            X_Data = X_Data.reshape(-1, self.IMAGE_SIZE-2*self.SLICE, self.IMAGE_SIZE-2*self.SLICE)
+        start_x = (self.IMAGE_SIZE - w) // 2
+        start_y = (self.IMAGE_SIZE - h) // 2
 
-            return X_Data, Y_Data
+        centered_image[start_y:start_y+h, start_x:start_x+w] = cropped_image
+
+        return centered_image
+
+
+    def enhance(self, image):
+        """Enhance the quality of image by boosting the values below a certain threshold"""
+
+        _, enhanced_image = cv2.threshold(image, self.THRESHOLD, 255, cv2.THRESH_BINARY)
+        return enhanced_image
         
-        # except:
-        #     print("Failed to run Function Process Image ")
 
+    def preprocess_image(self, image_path):
+        """Preprocess the image by zooming in (shrinking) while keeping the final size constant."""
+
+        image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+        if image is None:
+            return None
+
+        padded_image = cv2.copyMakeBorder(image, self.PADDING, self.PADDING, self.PADDING, self.PADDING, 
+                                          cv2.BORDER_CONSTANT, value=0)
+        if self.INVERT:
+            padded_image = 255 - padded_image
+
+
+        resized_image = cv2.resize(padded_image, (self.IMAGE_SIZE, self.IMAGE_SIZE))
+
+
+        cropped_image = resized_image[self.SLICE:self.IMAGE_SIZE - self.SLICE,
+                                      self.SLICE:self.IMAGE_SIZE - self.SLICE]
+
+
+        zoomed_image = cv2.resize(cropped_image, (self.IMAGE_SIZE, self.IMAGE_SIZE))
+
+        centered_image = self.centerize(zoomed_image)
+
+        if self.THRESHOLD != None : 
+            enhanced_image = self.enhance(centered_image)
+            return enhanced_image
+        else : return centered_image
+
+
+    def process_images(self):
+        """Process all images from the dataset."""
+        self.CATEGORIES = self.get_categories()
+
+        for category in self.CATEGORIES:
+            category_path = os.path.join(self.PATH, category)
+            class_index = self.CATEGORIES.index(category)
+
+            for img_name in os.listdir(category_path):
+                img_path = os.path.join(category_path, img_name)
+
+                try:
+                    image = self.preprocess_image(img_path)
+                    if image is not None:
+                        self.x_data.append(image)
+                        self.y_data.append(class_index)
+                except Exception as e:
+                    print(f"Error processing {img_path}: {e}")
+
+        X_Data = np.asarray(self.x_data) / 255.0
+        Y_Data = np.asarray(self.y_data)
+        X_Data = X_Data.reshape(-1, self.IMAGE_SIZE, self.IMAGE_SIZE)
+
+        return X_Data, Y_Data
+    
 
     def load_data(self):
+        """Load and return the dataset."""
 
         print('Loading Files and Dataset ...')
 
-        X_Data,Y_Data = self.Process_Images()
-        # np.savez_compressed("dataset", X_train=X_Data, y_train=Y_Data)
+        X_Data, Y_Data = self.process_images()
 
+        X_train, X_test, y_train, y_test = train_test_split(X_Data, Y_Data, train_size=0.8, stratify=Y_Data, random_state=0)
 
-        # data = np.load("dataset.npz")
-        # x_train = data["X_train"]
-        return X_Data,Y_Data
-        
-
-
-
-DATASET1 = "Datasets\DS-1"
-DATASET2 = "Datasets\DS-2"
-
-LABELS = {0 : 'Alef',
-          1 : 'Be',
-          2 : 'Pe',
-          3 : 'Te',
-          4 : 'Se',
-          5 : 'Jim',
-          6 : 'Che',
-          7 : 'H',
-          8 : 'Khe',
-          9 : 'Dal',
-          10 : 'Zal',
-          11 : 'Re',
-          12 : 'Ze',
-          13 : 'Zhe',
-          14 : 'Sin',
-          15 : 'Shin',
-          16 : 'Sad', 
-          17 : 'Zad',
-          18 : 'Ta',
-          19 : 'Za',
-          20 : 'Ayin',
-          21 : 'Ghayin',
-          22 : 'Fe',
-          23 : 'Ghaf', 
-          24 : 'Kaf',
-          25 : 'Gaf', 
-          26 : 'Lam',
-          27 : 'Mim',
-          28 : 'Noon',
-          29 : 'Vav', 
-          30 : 'He',
-          31 : 'Ye',
-          32 : 'Zero',
-          33 : 'One',
-          34 : 'Two',
-          35 : 'Three',
-          36 : 'Four',
-          37 : 'Five',
-          38 : 'Six',
-          39 : 'Seven',
-          40 : 'Eight',
-          41 : 'Nine',
-          42 : 'Five'}
+        return (X_train, y_train), (X_test, y_test)
 
 
 if __name__ == "__main__":
+    DATASET_PATH = "Datasets/DS-2 changed"
+    
+    dataset_loader = DataLoader(path=DATASET_PATH, image_size=64, shrink=0, padding=15, threshold=None, invert=False)
+    (X_train, y_train), (X_test, y_test) = dataset_loader.load_data()
 
-    dataset = DataLoader(path=DATASET1,
-                    image_size=64,
-                    shrink=22,
-                    padding=0,
-                    invert=True)
+    print(f"X_Train shape: {X_train.shape}")
+    print(f"Y_Train shape: {y_train.shape}")
+    print(f"X_Test shape: {X_test.shape}")
+    print(f"Y_Test shape: {y_test.shape}")
 
-    X_Data,Y_Data = dataset.load_data()
-
-    print(X_Data.shape)
-    print(Y_Data.shape)
-
-    cv2.imshow(f"test no. {Y_Data[400]}", X_Data[400])
-
+    cv2.imshow(f"Test no. {y_train[20]}", X_train[20])
     cv2.waitKey(0)
+    cv2.destroyAllWindows()
