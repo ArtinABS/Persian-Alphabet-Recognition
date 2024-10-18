@@ -143,7 +143,53 @@ class DataLoader:
 
         X_train, X_test, y_train, y_test = train_test_split(X_Data, Y_Data, train_size=0.8, stratify=Y_Data, random_state=0)
 
-        return (X_train, y_train), (X_test, y_test)
+        return X_train, y_train, X_test, y_test
+
+
+LABELS = {0 : 'Alef',
+          1 : 'Be',
+          2 : 'Pe',
+          3 : 'Te',
+          4 : 'Se',
+          5 : 'Jim',
+          6 : 'Che',
+          7 : 'H',
+          8 : 'Khe',
+          9 : 'Dal',
+          10 : 'Zal',
+          11 : 'Re',
+          12 : 'Ze',
+          13 : 'Zhe',
+          14 : 'Sin',
+          15 : 'Shin',
+          16 : 'Sad', 
+          17 : 'Zad',
+          18 : 'Ta',
+          19 : 'Za',
+          20 : 'Ayin',
+          21 : 'Ghayin',
+          22 : 'Fe',
+          23 : 'Ghaf', 
+          24 : 'Kaf',
+          25 : 'Gaf', 
+          26 : 'Lam',
+          27 : 'Mim',
+          28 : 'Noon',
+          29 : 'Vav', 
+          30 : 'He',
+          31 : 'Ye',
+          32 : 'Zero',
+          33 : 'One',
+          34 : 'Two',
+          35 : 'Three',
+          36 : 'Four',
+          37 : 'Five',
+          38 : 'Six',
+          39 : 'Seven',
+          40 : 'Eight',
+          41 : 'Nine',
+          42 : 'Five'}
+
 
 
 if __name__ == "__main__":
