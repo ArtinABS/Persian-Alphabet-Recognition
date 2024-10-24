@@ -49,26 +49,40 @@ class DataLoader:
     
     
     def centerize(self, image):
-        """Center the letter in the image using contours to find the bounding box."""
-
+        """Center the letter in the image using the bounding box of all contours."""
+        
         contours, _ = cv2.findContours(image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
         if len(contours) == 0:
-            return image
+            return image  
 
+        min_x, min_y = np.inf, np.inf
+        max_x, max_y = -np.inf, -np.inf
 
-        x, y, w, h = cv2.boundingRect(max(contours, key=cv2.contourArea))
+        for cnt in contours:
+            x, y, w, h = cv2.boundingRect(cnt)
+            min_x = min(min_x, x)
+            min_y = min(min_y, y)
+            max_x = max(max_x, x + w)
+            max_y = max(max_y, y + h)
 
-        cropped_image = image[y:y+h, x:x+w]
+        min_x = max(min_x, 0)
+        min_y = max(min_y, 0)
+        max_x = min(max_x, image.shape[1])
+        max_y = min(max_y, image.shape[0])
+
+        cropped_image = image[min_y:max_y, min_x:max_x]
 
         centered_image = np.zeros((self.IMAGE_SIZE, self.IMAGE_SIZE), dtype=np.uint8)
 
+        w, h = cropped_image.shape[1], cropped_image.shape[0]
         start_x = (self.IMAGE_SIZE - w) // 2
         start_y = (self.IMAGE_SIZE - h) // 2
 
         centered_image[start_y:start_y+h, start_x:start_x+w] = cropped_image
 
         return centered_image
+
 
 
     def enhance(self, image):
@@ -114,7 +128,7 @@ class DataLoader:
 
         for category in self.CATEGORIES:
             category_path = os.path.join(self.PATH, category)
-            class_index = self.CATEGORIES.index(category)
+            class_index = int(category.split('-')[0])-1
 
             for img_name in os.listdir(category_path):
                 img_path = os.path.join(category_path, img_name)
@@ -193,16 +207,18 @@ LABELS = {0 : 'Alef',
 
 
 if __name__ == "__main__":
-    DATASET_PATH = "Datasets/DS-2 changed"
+    DATASET_PATH = "Datasets/DS-2"
     
-    dataset_loader = DataLoader(path=DATASET_PATH, image_size=64, shrink=0, padding=15, threshold=None, invert=False)
-    (X_train, y_train), (X_test, y_test) = dataset_loader.load_data()
+    dataset_loader = DataLoader(path=DATASET_PATH, image_size=64, shrink=0, padding=20, threshold=None, invert=False)
+    X_train, y_train, X_test, y_test = dataset_loader.load_data()
 
     print(f"X_Train shape: {X_train.shape}")
     print(f"Y_Train shape: {y_train.shape}")
     print(f"X_Test shape: {X_test.shape}")
     print(f"Y_Test shape: {y_test.shape}")
 
-    cv2.imshow(f"Test no. {y_train[20]}", X_train[20])
+    exmaple_idx = 250
+
+    cv2.imshow(f"Test no. {y_train[exmaple_idx]}", X_train[exmaple_idx])
     cv2.waitKey(0)
     cv2.destroyAllWindows()
