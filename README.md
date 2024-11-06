@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Persian Alphabet Recognition</title>
 </head>
 <body>
 
@@ -16,7 +15,6 @@
 <ul>
   <li><strong>Datasets/</strong> - Contains labeled images of Persian characters, used for training and evaluation.</li>
   <li><strong>Models/</strong> - Includes pre-trained model files and architectures optimized for character recognition tasks.</li>
-  <li><strong>my_models.ipynb</strong> - A Jupyter Notebook that demonstrates model training, evaluation, and performance analysis on the dataset.</li>
 </ul>
 
 <h2>Models Preview</h2>
@@ -53,10 +51,8 @@ cd Persian-Alphabet-Recognition
 </code></pre>
 
 <h2>Usage</h2>
-<p>Open <code>my_models.ipynb</code> in Jupyter Notebook to view the training process and evaluate model performance. You can use the datasets provided in <code>Datasets/</code> to test additional models or fine-tune existing ones.</p>
+<p>Open Models folder to view the training process and evaluate model performance. You can use the datasets provided in <code>Datasets/</code> to test additional models or fine-tune existing ones.</p>
 
-<h2>License</h2>
-<p>This project is licensed under the MIT License. See the <a href="LICENSE">LICENSE</a> file for more information.</p>
 
 <h2>Contributors</h2>
 <p>Special thanks to everyone who contributed to this project.</p>
