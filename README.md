@@ -53,6 +53,9 @@ cd Persian-Alphabet-Recognition
 <h2>Usage</h2>
 <p>Open Models folder to view the training process and evaluate model performance. You can use the datasets provided in <code>Datasets/</code> to test additional models or fine-tune existing ones.</p>
 
+<h2>License</h2>
+<p>This project is licensed under the MIT License. See the <a href="LICENSE">LICENSE</a> file for more information.</p>
+
 
 <h2>Contributors</h2>
 <p>Special thanks to everyone who contributed to this project.</p>
