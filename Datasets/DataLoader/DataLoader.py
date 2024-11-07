@@ -1,5 +1,6 @@
 import os
 import cv2
+import random
 import numpy as np
 import warnings
 
@@ -253,6 +254,24 @@ LABELS = {0 : 'Alef',
           41 : 'Nine',
           42 : 'Five'}
 
+
+def merge_shuffle_folders(dataset1, dataset2, output_dataset):
+    if not os.path.exists(output_dataset):
+        os.makedirs(output_dataset)
+    image_paths = []
+
+    for root, dirs, files in os.walk(dataset1):
+        for file in files:
+            if file.endswith('.jpg'):
+                image_paths.append(os.path.join(root, file))
+
+    for root, dirs, files in os.walk(dataset2):
+        for file in files:
+            if file.endswith('.jpg'):
+                image_paths.append(os.path.join(root, file))
+
+    random.shuffle(image_paths)
+    return image_paths
 
 
 if __name__ == "__main__":
